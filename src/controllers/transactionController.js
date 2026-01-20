@@ -37,16 +37,47 @@ const createTransaction = (req, res) => {
     });
   }
 
+  // Validate each item in the transaction
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    
+    if (!item.productId || !item.productName || item.quantity === undefined || item.price === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: `Item at index ${i} is missing required fields (productId, productName, quantity, price)`
+      });
+    }
+
+    const quantity = parseInt(item.quantity);
+    const price = parseFloat(item.price);
+
+    if (isNaN(quantity) || quantity <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Item at index ${i} has invalid quantity`
+      });
+    }
+
+    if (isNaN(price) || price < 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Item at index ${i} has invalid price`
+      });
+    }
+  }
+
   // Calculate total
   let totalAmount = 0;
   const transactionItems = items.map(item => {
-    const subtotal = item.quantity * item.price;
+    const quantity = parseInt(item.quantity);
+    const price = parseFloat(item.price);
+    const subtotal = quantity * price;
     totalAmount += subtotal;
     return {
       productId: item.productId,
       productName: item.productName,
-      quantity: item.quantity,
-      price: item.price,
+      quantity,
+      price,
       subtotal
     };
   });

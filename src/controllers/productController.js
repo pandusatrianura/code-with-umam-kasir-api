@@ -63,11 +63,28 @@ const createProduct = (req, res) => {
     });
   }
 
+  const parsedPrice = parseFloat(price);
+  const parsedStock = parseInt(stock);
+
+  if (isNaN(parsedPrice) || parsedPrice < 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Price must be a valid positive number'
+    });
+  }
+
+  if (isNaN(parsedStock) || parsedStock < 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Stock must be a valid positive number'
+    });
+  }
+
   const newProduct = {
     id: nextId++,
     name,
-    price: parseFloat(price),
-    stock: parseInt(stock),
+    price: parsedPrice,
+    stock: parsedStock,
     category: category || 'Uncategorized',
     description: description || ''
   };
@@ -94,11 +111,36 @@ const updateProduct = (req, res) => {
 
   const { name, price, stock, category, description } = req.body;
   
+  let updatedPrice = products[index].price;
+  let updatedStock = products[index].stock;
+
+  if (price !== undefined) {
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Price must be a valid positive number'
+      });
+    }
+    updatedPrice = parsedPrice;
+  }
+
+  if (stock !== undefined) {
+    const parsedStock = parseInt(stock);
+    if (isNaN(parsedStock) || parsedStock < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Stock must be a valid positive number'
+      });
+    }
+    updatedStock = parsedStock;
+  }
+
   products[index] = {
     ...products[index],
     name: name || products[index].name,
-    price: price !== undefined ? parseFloat(price) : products[index].price,
-    stock: stock !== undefined ? parseInt(stock) : products[index].stock,
+    price: updatedPrice,
+    stock: updatedStock,
     category: category || products[index].category,
     description: description !== undefined ? description : products[index].description
   };
